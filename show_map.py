@@ -25,8 +25,8 @@ def convert_to_ranges(hsv):
     return [np.array(lower), np.array(upper)]
 
 ibra_regs = {
-    'CAR': [39, 34, 96],
-    'GAS': [56, 29, 91],
+    'CAR': [np.array([0, 77, 245], np.uint8), np.array([29, 98, 255], np.uint8)],
+    'GAS': [np.array([25, 69, 226], np.uint8), np.array([39, 78, 255], np.uint8)],
     'PIL': [81, 17, 85],
     'MUR': [np.array([23, 61, 208], np.uint8), np.array([27, 68, 227], np.uint8)],
     'GES': [77, 15, 95],
@@ -38,9 +38,9 @@ ibra_regs = {
     'ESP': [48, 52, 88],
     'MAL': [35, 38, 87],
     'COO': [48, 33, 86],
-    'MUR': [47,26,87],
-    'GAS': [56, 29, 91],
-    'PIL': [81, 17, 85]
+    'PIL': [81, 17, 85],
+    'DMR': [np.array([0, 0, 235], np.uint8), np.array([10, 255, 255], np.uint8)],
+    'CHC': [np.array([10, 75, 226], np.uint8), np.array([13, 78, 240], np.uint8)],
 }
 
 text = [np.array([0, 0, 0]), np.array([254, 255, 127])]
@@ -50,13 +50,7 @@ outline = [np.array([0, 0, 255]), np.array([0, 0, 255])]
 img = cv2.imread(map, 1)
 hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-print(*convert_to_ranges(ibra_regs['MUR']))
-mask_gray_border = (cv2.inRange(hsv_img, *ibra_regs['MUR']))
-
-hsvl = np.array([23, 61, 208], np.uint8)
-hsvh = np.array([27, 68, 227], np.uint8)
-
-mask = cv2.inRange(hsv_img, hsvl, hsvh)
+mask = cv2.inRange(hsv_img, *ibra_regs['CHC'])
 res = cv2.bitwise_and(img, img, mask=mask)
 
 ret, threshold = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
@@ -65,7 +59,7 @@ mask_bkg = ~(cv2.inRange(hsv_img, *outline))
 mask_text = (cv2.inRange(hsv_img, *text))
 
 image2 = img.copy()
-image2[mask_bkg > 0] = (0, 0, 255)
+image2[mask_bkg > 0] = (0, 0, 0)
 image2[mask_text > 0] = (0, 0, 0)
 im = image2 | res
 
